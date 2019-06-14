@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Charge status</title>
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+</head>
+
+<body>
+
+    <center>
+        <h1>Charge status info</h1>
+        <div id="time"></div>
+    </center>
+
+    <div id="tbody1"></div>
+    <div id="tbody2"></div>
+
+    <script type="text/javascript">
+        function creatChargingTable(data) {
+
+            var tableHead = `
+        <h2>Charging Table</h2>
+        <table border="1">
+        <tr>
+          <th>Proto</th>
+          <th>DevID</th>
+          <th>GunID</th>
+          <th>Status</th>
+          <th>SOC</th>
+        </tr>`;
+
+            var tableEnd = `
+        </table>`;
+            var tableBody = "";
+
+            for (var proto in data) {
+                if (data[proto]["total"] > 0) {
+                    tableBody += `
+                    <tr>
+                    <td><font color="#FF0000">${proto}</font></td>
+                    <td><font color="#FF0000">${data[proto]["total"]}</font></td>
+                    <td> </td>
+                    <td> </td>
+                    <td> </td>
+                    </tr>
+                    `;
+                }
+
+                if (data[proto]["list"]) {
+                    for (var item of data[proto]["list"]) {
+                        tableBody += `
+                        <tr>
+                        <td>${proto}</td>
+                        <td>${item.devid}</td>
+                        <td>${item.gunid}</td>
+                        <td>charging</td>
+                        <td>${item.nowSoc}</td>
+                        </tr>
+                        `;
+                    }
+                }
+            }
+
+            var mytable = tableHead + tableBody + tableEnd;
+
+            //现在tableData已经生成好了，把他赋值给上面的tbody
+            $("#tbody1").html(mytable);
+        }
+
+        function creatOfflineTable(data) {
+
+            var tableHead = `
+    <h2>Offline Table</h2>
+    <table border="1">
+    <tr>
+      <th>Proto</th>
+      <th>DevID</th>
+    </tr>`;
+
+            var tableEnd = `
+    </table>`;
+            var tableBody = "";
+            for (var proto in data) {
+                if (data[proto]["total"] > 0) {
+                    tableBody += `
+                <tr>
+                <td><font color="#FF0000">${proto}</font></td>
+                <td><font color="#FF0000">${data[proto]["total"]}</font></td>
+                </tr>
+                `;
+                }
+
+                if (data[proto]["list"]) {
+                    for (var item of data[proto]["list"]) {
+                        tableBody += `
+                    <tr>
+                    <td>${proto}</td>
+                    <td>${item.devid}</td>
+                    </tr>
+                    `;
+                    }
+                }
+            }
+
+            var mytable = tableHead + tableBody + tableEnd;
+
+            //现在tableData已经生成好了，把他赋值给上面的tbody
+            $("#tbody2").html(mytable);
+        }
+
+        function updateTime(time)
+        {
+            $("#time").html(time);
+        }
+
+        function getData() {
+            $.ajax({
+                type: "post",
+                url: "data",
+                data: null,
+                dataType: "json", //回调函数接收数据的数据格式
+                success: function (data) {
+                    $('#text').empty();
+                    updateTime(data['time']);
+                    creatChargingTable(data['charging']);
+                    creatOfflineTable(data['offline']);
+                },
+                error: function (data) {
+                    $('#text').html("<span>" + "失败！..." + "</span>")
+                }
+            });
+            setTimeout(getData, 3000);
+        }
+
+        window.onload = function () {
+            getData();
+        }
+    </script>
+
+</body>
+
+</html>
